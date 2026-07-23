@@ -46,16 +46,14 @@ function makeSummary(content) {
   const action = sents
     .slice(1)
     .filter((s) => kw.some((k) => s.includes(k)))
-    .slice(0, 2);
-  let out = [lead, ...action].join('');
-  if (out.length > 180) out = out.slice(0, 180) + '…';
-  return out;
+    .slice(0, 3);
+  // 完整输出，不做字数截断（不使用“…”）
+  return [lead, ...action].join('');
 }
 
 function makeVideoScript(article, summary) {
-  // 尽量简短：标题作钩子 + 一句话要点（截断）+ 轻量引导
-  let lead = summary.split(/[。！？!?]/)[0].replace(/\s+/g, '').trim();
-  if (lead.length > 48) lead = lead.slice(0, 48) + '…';
+  // 标题作钩子 + 一句完整要点（取首句，不使用“…”）+ 轻量引导
+  const lead = summary.split(/[。！？!?]/)[0].replace(/\s+/g, '').trim();
   return `${article.title}？\n${lead}\n关注我，每天一个实用养生小知识～`;
 }
 

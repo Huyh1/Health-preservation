@@ -581,15 +581,16 @@
             color: var(--danger);
         }
 
-        .modal-actions {
+        .modal-header-actions {
             display: flex;
-            gap: 8px;
-            padding: 12px 24px;
-            border-bottom: 1px solid var(--rule);
+            gap: 6px;
+            align-items: center;
+            flex-shrink: 0;
+            margin-right: 10px;
         }
 
         .modal-action-btn {
-            padding: 8px 16px;
+            padding: 6px 12px;
             border: 1px solid var(--rule);
             border-radius: var(--radius-md);
             font-size: 13px;
@@ -597,9 +598,10 @@
             transition: all 0.2s;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             background: var(--bg2);
             color: var(--ink);
+            white-space: nowrap;
         }
 
         .modal-action-btn:hover {
@@ -764,7 +766,25 @@
             margin-bottom: 6px;
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 6px;
+        }
+
+        .meta-copy-btn {
+            font-size: 12px;
+            font-weight: 500;
+            padding: 3px 12px;
+            border: 1px solid var(--accent);
+            border-radius: 12px;
+            background: transparent;
+            color: var(--accent);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .meta-copy-btn:hover {
+            background: var(--accent);
+            color: #fff;
         }
 
         .meta-text {
@@ -889,18 +909,15 @@
                     <div class="modal-title" id="modalTitle"></div>
                     <div class="modal-tags" id="modalTags"></div>
                 </div>
+                <div class="modal-header-actions">
+                    <button class="modal-action-btn" id="modalReadBtn" onclick="toggleRead(currentModalId)" title="标记已读">
+                        <span>&#9989;</span> 已读
+                    </button>
+                    <button class="modal-action-btn" id="modalUsedBtn" onclick="toggleUsed(currentModalId)" title="标记已使用">
+                        <span>&#127873;</span> 已用
+                    </button>
+                </div>
                 <button class="modal-close" onclick="closeModal()">&times;</button>
-            </div>
-            <div class="modal-actions">
-                <button class="modal-action-btn" id="modalReadBtn" onclick="toggleRead(currentModalId)">
-                    <span>&#9989;</span> 标记已读
-                </button>
-                <button class="modal-action-btn" id="modalUsedBtn" onclick="toggleUsed(currentModalId)">
-                    <span>&#127873;</span> 标记已使用
-                </button>
-                <button class="modal-action-btn" id="modalCopyBtn" onclick="copyModalContent()">
-                    <span>&#128203;</span> 复制文案
-                </button>
             </div>
             <div class="modal-body" id="modalBody"></div>
             <div class="modal-extra" id="modalExtra"></div>
@@ -1293,7 +1310,10 @@
                     }
                     html += `
                         <div class="meta-block">
-                            <div class="meta-title">&#127916; 短视频文案</div>
+                            <div class="meta-title">
+                                <span>&#127916; 短视频文案</span>
+                                <button class="meta-copy-btn" onclick="copyModalContent()">复制</button>
+                            </div>
                             <div class="meta-text">${escapeHtml(scriptText)}</div>
                         </div>`;
                 } else if (hashtags.length) {
