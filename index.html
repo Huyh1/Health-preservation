@@ -815,11 +815,6 @@
             padding: 16px 18px;
         }
 
-        .card-tag.meta {
-            background: rgba(90, 140, 180, 0.12);
-            color: var(--info);
-        }
-
         @media (max-width: 768px) {
             .modal-extra { padding: 18px 16px 22px; }
         }
@@ -1273,7 +1268,6 @@
                     <span class="card-tag folder">${folderConfigItem.label}</span>
                     ${article.seasons.map(s => `<span class="card-tag season ${s}">${s}</span>`).join('')}
                     ${article.topics.map(t => `<span class="card-tag topic">${t}</span>`).join('')}
-                    ${article.summary ? '<span class="card-tag meta">已解析</span>' : ''}
                 `;
 
                 const statusBadges = [];
