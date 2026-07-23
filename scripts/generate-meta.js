@@ -21,8 +21,10 @@ const ROOT = path.resolve(__dirname, '..');
 const DATA_FILE = path.join(ROOT, 'data.js');
 const OUT_FILE = path.join(ROOT, 'meta.js');
 
-// 仅生成示例时覆盖的文章 id；传 all 则全部
-const TARGET_IDS = [0, 1, 2];
+// 仅生成示例时覆盖的文章 id；传 all 则全部。
+// 注意：示例文章的高质量版本已由 scripts/generate-meta-llm.js（大模型分析）生成，
+// 本脚本为“离线抽取式兜底”，质量较低，默认不生成任何文章，避免覆盖高质量示例。
+const TARGET_IDS = [];
 
 // ---------- 读取 data.js 中的 ARTICLE_DATA ----------
 const src = fs.readFileSync(DATA_FILE, 'utf8');
@@ -92,8 +94,13 @@ ARTICLE_DATA.forEach((a) => {
   };
 });
 
+if (ids.length === 0) {
+  console.log('TARGET_IDS 为空且未指定 all，未生成任何内容（高质量示例已由大模型脚本生成，已保留）。');
+  process.exit(0);
+}
+
 const out =
-  '// 文章扩展元数据（自动生成）\n' +
+  '// 文章扩展元数据（离线抽取式自动生成，质量较低，仅作兜底）\n' +
   '// 字段：summary 总结/解析, videoScript 短视频文案, hashtags 四个话题\n' +
   'const ARTICLE_META = ' +
   JSON.stringify(META, null, 2) +

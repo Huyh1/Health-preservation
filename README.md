@@ -39,9 +39,10 @@ python3 -m http.server 8000
 health-preservation/
 ├── index.html             # 页面结构、样式与交互逻辑
 ├── data.js                # 文章数据（ARTICLE_DATA 数组，296 篇）
-├── meta.js                # 文章扩展元数据（自动生成）
+├── meta.js                # 文章扩展元数据（当前含 5 篇大模型高质量示例）
 ├── scripts/
-│   └── generate-meta.js   # 元数据生成脚本
+│   ├── generate-meta.js       # 离线抽取式兜底脚本（质量较低，默认不生成）
+│   └── generate-meta-llm.js   # 基于大模型的批量高质量生成脚本
 └── README.md
 ```
 
@@ -69,14 +70,25 @@ const ARTICLE_META = {
 
 ### 生成 / 更新元数据
 
-使用 Node 脚本程序化生成（抽取式，非逐篇 AI 精写）：
+推荐用 **大模型分析正文** 的方式生成高质量内容（更自然、完整）：
 
 ```bash
-node scripts/generate-meta.js        # 仅生成示例文章（脚本内 TARGET_IDS）
-node scripts/generate-meta.js all    # 为全部 296 篇文章生成
+# 需 Node 18+，配置 API Key 后运行（兼容 OpenAI Chat Completions 接口）
+LLM_API_KEY=sk-xxx node scripts/generate-meta-llm.js          # 全部 296 篇
+LLM_API_KEY=sk-xxx node scripts/generate-meta-llm.js 0 1 2    # 仅指定 id
+
+# 可选环境变量：LLM_BASE_URL（默认 https://api.openai.com/v1）、LLM_MODEL（默认 gpt-4o-mini）、LLM_CONCURRENCY（默认 5）
 ```
 
-生成后刷新页面即可生效。如需更贴合的文案，可手动编辑 `meta.js` 中对应条目，或改写脚本的生成逻辑后重新运行。
+该脚本会把每篇文章的标题、季节、主题与正文交给模型，产出 `summary`（总结/解析）、`videoScript`（短视频文案）与 `hashtags`（四个话题），并覆盖写入 `meta.js`。
+
+兜底方案（离线、抽取式、质量较低，默认不生成以免覆盖高质量示例）：
+
+```bash
+node scripts/generate-meta.js all    # 为全部文章做离线抽取（会覆盖 meta.js）
+```
+
+`meta.js` 当前已内置 5 篇由模型分析生成的高质量示例（过敏 / 冬令瘙痒 / 夏季桃花癣 / 防晒 / 春困食疗）。生成后刷新页面即可生效；也可手动编辑 `meta.js` 中对应条目微调。
 
 ## 数据格式
 
