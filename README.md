@@ -37,10 +37,46 @@ python3 -m http.server 8000
 
 ```
 health-preservation/
-├── index.html   # 页面结构、样式与交互逻辑
-├── data.js      # 文章数据（ARTICLE_DATA 数组）
+├── index.html             # 页面结构、样式与交互逻辑
+├── data.js                # 文章数据（ARTICLE_DATA 数组，296 篇）
+├── meta.js                # 文章扩展元数据（自动生成）
+├── scripts/
+│   └── generate-meta.js   # 元数据生成脚本
 └── README.md
 ```
+
+## 扩展元数据（总结 / 解析、短视频文案、话题）
+
+每篇文章可附带三类扩展内容，用于内容二次加工与短视频分发：
+
+- `summary`：总结 / 解析（抽取式自动生成）
+- `videoScript`：短视频口播文案（模板 + 文章要素填充）
+- `hashtags`：四个话题标签（由 季节 + 主题 + 通用养生标签 派生）
+
+这些数据独立于 `data.js`，存放在 `meta.js` 的 `ARTICLE_META` 中，按文章 `id` 索引：
+
+```js
+const ARTICLE_META = {
+  0: {
+    summary: "…",
+    videoScript: "【开场钩子】…【场景切入】…【干货输出】…【行动建议】…【结尾引流】…",
+    hashtags: ["春季养生", "过敏防护", "健康养生", "养生小知识"]
+  }
+};
+```
+
+在详情弹窗中，若某篇文章存在上述字段，会额外展示「总结 / 解析」「短视频文案」「话题」三个板块；列表卡片上也会标记「已解析」。
+
+### 生成 / 更新元数据
+
+使用 Node 脚本程序化生成（抽取式，非逐篇 AI 精写）：
+
+```bash
+node scripts/generate-meta.js        # 仅生成示例文章（脚本内 TARGET_IDS）
+node scripts/generate-meta.js all    # 为全部 296 篇文章生成
+```
+
+生成后刷新页面即可生效。如需更贴合的文案，可手动编辑 `meta.js` 中对应条目，或改写脚本的生成逻辑后重新运行。
 
 ## 数据格式
 

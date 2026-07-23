@@ -746,6 +746,63 @@
         /* Scrollbar */
         .main::-webkit-scrollbar { width: 6px; }
         .main::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 3px; }
+
+        /* Modal extra: 总结/解析、短视频文案、话题 */
+        .modal-extra {
+            display: none;
+            border-top: 1px solid var(--rule);
+            padding: 16px 24px 20px;
+            background: var(--bg);
+        }
+
+        .meta-block { margin-bottom: 16px; }
+        .meta-block:last-child { margin-bottom: 0; }
+
+        .meta-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .meta-text {
+            font-size: 14px;
+            line-height: 1.8;
+            color: var(--ink);
+            white-space: pre-wrap;
+            word-break: break-word;
+            background: var(--bg2);
+            border: 1px solid var(--rule);
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+        }
+
+        .meta-hashtags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .meta-hashtag {
+            font-size: 12px;
+            padding: 4px 12px;
+            background: rgba(74, 140, 95, 0.1);
+            color: var(--accent);
+            border-radius: 14px;
+            font-weight: 500;
+        }
+
+        .card-tag.meta {
+            background: rgba(90, 140, 180, 0.12);
+            color: var(--info);
+        }
+
+        @media (max-width: 768px) {
+            .modal-extra { padding: 14px 16px 18px; }
+        }
     </style>
 </head>
 <body>
@@ -859,6 +916,7 @@
                 </button>
             </div>
             <div class="modal-body" id="modalBody"></div>
+            <div class="modal-extra" id="modalExtra"></div>
         </div>
     </div>
 
@@ -866,6 +924,7 @@
     <div class="toast" id="toast"></div>
 
     <script src="data.js"></script>
+    <script src="meta.js"></script>
     <script>
         // State
         let allArticles = [];
@@ -1178,6 +1237,7 @@
                     <span class="card-tag folder">${folderConfigItem.label}</span>
                     ${article.seasons.map(s => `<span class="card-tag season ${s}">${s}</span>`).join('')}
                     ${article.topics.map(t => `<span class="card-tag topic">${t}</span>`).join('')}
+                    ${article.summary ? '<span class="card-tag meta">已解析</span>' : ''}
                 `;
 
                 const statusBadges = [];
@@ -1226,6 +1286,38 @@
             document.getElementById('modalTags').innerHTML = tagsHtml;
             document.getElementById('modalBody').textContent = article.content;
 
+            // 扩展元数据：总结/解析、短视频文案、话题
+            const extraEl = document.getElementById('modalExtra');
+            if (article.summary || article.videoScript || (article.hashtags && article.hashtags.length)) {
+                let html = '';
+                if (article.summary) {
+                    html += `
+                        <div class="meta-block">
+                            <div class="meta-title">&#128204; 总结 / 解析</div>
+                            <div class="meta-text">${escapeHtml(article.summary)}</div>
+                        </div>`;
+                }
+                if (article.videoScript) {
+                    html += `
+                        <div class="meta-block">
+                            <div class="meta-title">&#127916; 短视频文案</div>
+                            <div class="meta-text">${escapeHtml(article.videoScript)}</div>
+                        </div>`;
+                }
+                if (article.hashtags && article.hashtags.length) {
+                    html += `
+                        <div class="meta-block">
+                            <div class="meta-title">&#127991; 话题</div>
+                            <div class="meta-hashtags">${article.hashtags.map(h => `<span class="meta-hashtag">#${escapeHtml(h)}</span>`).join('')}</div>
+                        </div>`;
+                }
+                extraEl.innerHTML = html;
+                extraEl.style.display = 'block';
+            } else {
+                extraEl.innerHTML = '';
+                extraEl.style.display = 'none';
+            }
+
             updateModalButtons();
 
             document.getElementById('modalOverlay').classList.add('active');
@@ -1263,7 +1355,10 @@
         // Initialize
         function init() {
             loadMarks();
-            allArticles = ARTICLE_DATA || [];
+            allArticles = (ARTICLE_DATA || []).map(a => {
+                const meta = (typeof ARTICLE_META !== 'undefined' && ARTICLE_META[a.id]) || {};
+                return Object.assign({}, a, meta);
+            });
             updateStats();
             buildSidebar();
             renderArticles();
