@@ -53,15 +53,10 @@ function makeSummary(content) {
 }
 
 function makeVideoScript(article, summary) {
-  const season = (article.seasons && article.seasons[0]) || '日常';
-  const topic = (article.topics && article.topics[0]) || '养生';
-  return (
-    `【开场钩子】${article.title}？这个问题，很多人一直都做错了。\n` +
-    `【场景切入】到了${season}，关于「${topic}」的误区特别多，今天一次说清楚。\n` +
-    `【干货输出】${summary}\n` +
-    `【行动建议】先把这条收藏起来，照着做就能少走弯路。\n` +
-    `【结尾引流】关注我，每天教你一个实用的养生小知识！`
-  );
+  // 尽量简短：标题作钩子 + 一句话要点（截断）+ 轻量引导
+  let lead = summary.split(/[。！？!?]/)[0].replace(/\s+/g, '').trim();
+  if (lead.length > 48) lead = lead.slice(0, 48) + '…';
+  return `${article.title}？\n${lead}\n关注我，每天一个实用养生小知识～`;
 }
 
 function makeHashtags(article) {
