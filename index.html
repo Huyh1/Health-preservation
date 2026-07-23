@@ -626,9 +626,25 @@
             line-height: 2.05;
             letter-spacing: 0.2px;
             color: var(--ink);
-            white-space: pre-wrap;
             word-break: break-word;
         }
+
+        .modal-body p {
+            margin: 0 0 16px;
+            text-indent: 2em;
+        }
+        .modal-body p:last-child { margin-bottom: 0; }
+
+        .modal-body .modal-sub {
+            margin: 26px 0 12px;
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--accent);
+            border-left: 4px solid var(--accent);
+            padding-left: 12px;
+            letter-spacing: 0.3px;
+        }
+        .modal-body .modal-sub:first-child { margin-top: 0; }
 
         .modal-body::-webkit-scrollbar { width: 6px; }
         .modal-body::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 3px; }
@@ -929,6 +945,7 @@
 
     <script src="data.js"></script>
     <script src="meta.js"></script>
+    <script src="formatted.js"></script>
     <script>
         // State
         let allArticles = [];
@@ -1213,6 +1230,21 @@
             return div.innerHTML;
         }
 
+        // 将模型重排的“段落化正文”转为安全 HTML：
+        // 空行分段、## 开头为小标题、**x** 加粗；先转义再插入标签，避免注入。
+        function renderFormatted(text) {
+            const esc = escapeHtml(text || '');
+            return esc.split(/\n{2,}/).map(block => {
+                const t = block.trim();
+                if (!t) return '';
+                const bold = s => s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+                if (t.startsWith('## ')) {
+                    return '<h4 class="modal-sub">' + bold(t.slice(3).trim()) + '</h4>';
+                }
+                return '<p>' + bold(t.replace(/\n/g, '<br>')) + '</p>';
+            }).join('');
+        }
+
         function renderArticles() {
             filteredArticles = getFilteredArticles();
             updateMainTitle();
@@ -1288,7 +1320,13 @@
                 ${article.topics.map(t => `<span class="card-tag topic">${t}</span>`).join('')}
             `;
             document.getElementById('modalTags').innerHTML = tagsHtml;
-            document.getElementById('modalBody').textContent = article.content;
+            // 正文渲染：优先使用模型重排的“段落化正文”，否则回退到原文（转义 + 换行）
+            const bodyEl = document.getElementById('modalBody');
+            if (article.formattedContent) {
+                bodyEl.innerHTML = renderFormatted(article.formattedContent);
+            } else {
+                bodyEl.innerHTML = '<p>' + escapeHtml(article.content).replace(/\n/g, '<br>') + '</p>';
+            }
 
             // 扩展元数据：总结/解析、短视频文案（话题并入文案内）
             const extraEl = document.getElementById('modalExtra');
@@ -1402,7 +1440,8 @@
             loadMarks();
             allArticles = (ARTICLE_DATA || []).map(a => {
                 const meta = (typeof ARTICLE_META !== 'undefined' && ARTICLE_META[a.id]) || {};
-                return Object.assign({}, a, meta);
+                const fmt = (typeof ARTICLE_FORMATTED !== 'undefined' && ARTICLE_FORMATTED[a.id]);
+                return Object.assign({}, a, meta, fmt ? { formattedContent: fmt } : {});
             });
             updateStats();
             buildSidebar();
